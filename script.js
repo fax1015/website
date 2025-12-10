@@ -226,6 +226,29 @@ if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
   });
 }
 
+// --- New Releases ---
+function closeReleases() {
+  const notice = document.querySelector(".new-releases-notice");
+  if (notice) {
+    notice.style.animation = "slideOut 0.3s ease-in forwards";
+    setTimeout(() => {
+      notice.style.display = "none";
+    }, 300);
+  }
+}
+
+// Add slideOut animation
+const style = document.createElement("style");
+style.textContent = `
+  @keyframes slideOut {
+    to {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+  }
+`;
+document.head.appendChild(style);
+
 // --- FAQ ---
 
 document.addEventListener("DOMContentLoaded", () => {

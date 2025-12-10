@@ -416,6 +416,133 @@ footer {
   scrollbar-width: thin;
 }
 
+/* New Releases Notice */
+.new-releases-notice {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  width: 320px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.releases-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.releases-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin: 0;
+}
+
+.releases-close {
+  background: none;
+  border: none;
+  color: var(--main-text);
+  cursor: pointer;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+}
+
+.releases-close:hover {
+  transform: scale(1.1);
+}
+
+.releases-close:active {
+  transform: scale(0.95);
+}
+
+.releases-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.release-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.release-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.release-item img {
+  width: 150px;
+  height: 150px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.release-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.release-name {
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-word;
+  margin: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 8px;
+}
+
+.release-type {
+  font-size: 11px;
+  opacity: 0.8;
+  margin: 0;
+}
+
+.bio-text:hover .notice-text {
+  display: inline; /* Hide the initial text on hover */
+}
+
+.bio-text:hover .header-text {
+  display: inline; /* Show the hover text on hover */
+}
+
+
+
 /* Mobile Styles */
 @media (max-width: 768px) {
   :root {
@@ -616,6 +743,11 @@ footer {
 
   /* Disable popup on mobile */
   #cursor {
+    display: none !important;
+  }
+
+  /* Responsive New Releases Notice */
+  .new-releases-notice {
     display: none !important;
   }
 }
