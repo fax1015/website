@@ -151,29 +151,29 @@
       <filter id="fisheye-chroma" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
 
         <feDisplacementMap in="SourceGraphic" in2="radialMask" scale="60" xChannelSelector="R" yChannelSelector="G"
-          result="fisheyeDisp" />
+          result="fisheyeDisp"></feDisplacementMap>
 
-        <feGaussianBlur in="fisheyeDisp" stdDeviation="0.5" result="zoomed" />
+        <feGaussianBlur in="fisheyeDisp" stdDeviation="0.5" result="zoomed"></feGaussianBlur>
 
         <feColorMatrix in="zoomed" type="matrix" values="1 0 0 0 0
                 0 0 0 0 0
                 0 0 0 0 0
-                0 0 0 1 0" result="red" />
-        <feOffset in="red" dx="2" dy="0" result="redShift" />
+                0 0 0 1 0" result="red"></feColorMatrix>
+        <feOffset in="red" dx="2" dy="0" result="redShift"></feOffset>
 
         <feColorMatrix in="zoomed" type="matrix" values="0 0 0 0 0
                 0 1 0 0 0
                 0 0 0 0 0
-                0 0 0 1 0" result="green" />
+                0 0 0 1 0" result="green"></feColorMatrix>
 
         <feColorMatrix in="zoomed" type="matrix" values="0 0 0 0 0
                 0 0 0 0 0
                 0 0 1 0 0
-                0 0 0 1 0" result="blue" />
-        <feOffset in="blue" dx="-2" dy="0" result="blueShift" />
+                0 0 0 1 0" result="blue"></feColorMatrix>
+        <feOffset in="blue" dx="-2" dy="0" result="blueShift"></feOffset>
 
-        <feBlend in="redShift" in2="green" mode="screen" result="rg" />
-        <feBlend in="rg" in2="blueShift" mode="screen" result="final" />
+        <feBlend in="redShift" in2="green" mode="screen" result="rg"></feBlend>
+        <feBlend in="rg" in2="blueShift" mode="screen" result="final"></feBlend>
       </filter>
     </defs>
   </svg>

@@ -430,7 +430,7 @@ footer {
   background: rgba(0, 0, 0, 0.3);
   border-radius: var(--radius);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  
+
 }
 
 .releases-header {
@@ -542,7 +542,7 @@ footer {
 
   .section-left {
     margin: 15px;
-    position: fixed;
+    position: relative;
     top: 0;
     left: 0;
     transform: none !important;
@@ -582,13 +582,13 @@ footer {
     align-items: center;
   }
 
-  .layer-2-1{
+  .layer-2-1 {
     display: block;
   }
 
-  .blur-box{
+  .blur-box {
     background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: none;
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
@@ -607,10 +607,11 @@ footer {
   }
 
   .section-right {
-    position: fixed;
-    top: 350px;
+    position: relative;
+    top: auto;
     left: 0;
     right: 0;
+    padding-top: 40px;
     margin: 15px;
     padding-right: 5px;
     transform: none !important;
@@ -695,7 +696,7 @@ footer {
     align-items: center;
     padding: 3vw;
     background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: none;
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius);
   }
