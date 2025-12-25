@@ -230,7 +230,7 @@ if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
 function closeReleases() {
   const notice = document.querySelector(".new-releases-notice");
   if (notice) {
-    notice.style.animation = "slideOut 0.3s ease-in forwards";
+    notice.style.animation = "slideOut 0.3s ease";
     setTimeout(() => {
       notice.style.display = "none";
     }, 300);
@@ -243,7 +243,7 @@ style.textContent = `
   @keyframes slideOut {
     to {
       opacity: 0;
-      transform: translateX(-30px);
+      transform: translateX(-100px);
     }
   }
 `;
