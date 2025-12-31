@@ -38,6 +38,17 @@ document.addEventListener("mouseup", () => {
   cursor.classList.remove("click");
 });
 
+// Hide cursor when hovering iframes (since they swallow mouse events)
+const iframes = document.querySelectorAll("iframe");
+iframes.forEach((iframe) => {
+  iframe.addEventListener("mouseenter", () => {
+    cursor.style.opacity = "0";
+  });
+  iframe.addEventListener("mouseleave", () => {
+    cursor.style.opacity = "1";
+  });
+});
+
 // --- Popup ---
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -227,6 +238,43 @@ if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
 }
 
 // --- New Releases ---
+const releaseData = {
+  title: "take me where the wind blows",
+  type: "Album",
+  image: "https://f4.bcbits.com/img/a0985209893_16.jpg",
+  link: "https://hypeddit.com/nlm090"
+};
+
+function renderReleaseContent() {
+  const content = `
+    <a href="${releaseData.link}" class="release-item" target="_blank">
+      <img src="${releaseData.image}" alt="${releaseData.title}">
+      <div class="release-info">
+        <p class="release-name">${releaseData.title}</p>
+        <p class="release-type">${releaseData.type}</p>
+      </div>
+    </a>
+  `;
+
+  // Render in Notice
+  const noticeContainer = document.querySelector(".releases-container");
+  if (noticeContainer) noticeContainer.innerHTML = content;
+
+  // Render in Grid (Item 4)
+  const gridItem4 = document.querySelector(".item-4");
+  if (gridItem4) {
+    gridItem4.innerHTML = content;
+    gridItem4.classList.add("no-padding"); // remove padding for full fit if desired, or keep it.
+    // Let's actually NOT add no-padding by default unless it looks bad, but based on typical bento, 
+    // replacing the inner content is the key.
+    // However, to make it look like the release item card itself is the grid item, 
+    // we might want to adjust styling. 
+    // For now, simple injection.
+  }
+}
+
+document.addEventListener("DOMContentLoaded", renderReleaseContent);
+
 function closeReleases() {
   const notice = document.querySelector(".new-releases-notice");
   if (notice) {
@@ -281,3 +329,50 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// --- Layout Toggle ---
+document.addEventListener("DOMContentLoaded", () => {
+  const toggleBtn = document.getElementById("layoutToggleBtn");
+  const conventionalLayout = document.getElementById("conventionalLayout");
+
+  // Last Updated Date
+  const dateEl = document.getElementById("last-update-date");
+  if (dateEl) {
+    fetch("https://api.github.com/repos/fax1015/website/commits?per_page=1")
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          const date = new Date(data[0].commit.author.date);
+          const formatted = `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')}`;
+          dateEl.innerText = formatted;
+        } else {
+          throw new Error("No commits found");
+        }
+      })
+      .catch(err => {
+        console.warn("GitHub fetch failed, falling back to basic date:", err);
+        const now = new Date();
+        const formatted = `${now.getFullYear()}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getDate().toString().padStart(2, '0')}`;
+        dateEl.innerText = formatted;
+      });
+  }
+
+  let isConventionalActive = false;
+
+  if (toggleBtn && conventionalLayout) {
+    toggleBtn.addEventListener("click", () => {
+      isConventionalActive = !isConventionalActive;
+
+      if (isConventionalActive) {
+        // Activate conventional layout
+        document.body.classList.add("conventional-active");
+        conventionalLayout.classList.add("active");
+        toggleBtn.classList.add("rotated");
+      } else {
+        // Deactivate conventional layout
+        document.body.classList.remove("conventional-active");
+        conventionalLayout.classList.remove("active");
+        toggleBtn.classList.remove("rotated");
+      }
+    });
+  }
+});

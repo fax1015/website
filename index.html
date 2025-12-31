@@ -122,13 +122,57 @@
       <button class="releases-close" onclick="closeReleases()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="releases-container">
-      <a href="https://hypeddit.com/nlm090" class="release-item" onclick="event.preventDefault();">
-        <img src="https://f4.bcbits.com/img/a0985209893_16.jpg" alt="Release">
-        <div class="release-info">
-          <p class="release-name">take me where the wind blows</p>
-          <p class="release-type">Album</p>
+      <!-- Content populated by script.js -->
+    </div>
+  </div>
+
+  <button class="floating-arrow-btn" id="layoutToggleBtn">
+    <i class="fa-solid fa-arrow-left"></i>
+  </button>
+
+  <div class="conventional-layout" id="conventionalLayout">
+    <div class="conventional-container">
+      <header class="conventional-header">
+        <div class="header-content simple-box no-hover">
+          <div class="header-info">
+            <h1>Random Stuff</h1>
+            <p>just putting anything i feel like in here</p>
+          </div>
         </div>
-      </a>
+      </header>
+
+      <div class="grid">
+        <div class="item item-0 simple-box no-padding no-hover">
+          <iframe src="https://www.youtube.com/embed?listType=playlist&list=UUZETRrcxUZkZZ1J4O1ZWbTw" width="100%"
+            height="380" frameBorder="0" allowfullscreen=""></iframe>
+        </div>
+        <div class="item item-1 simple-box no-padding">
+          <a href="https://soundcloud.com/fax0508/sets/discography?si=2567cdff22714f49a4e4eabd3a8b4425&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing"
+            target="_blank" class="soundcloud-card">
+            <span class="sc-text">Full Discography<br>on SoundCloud</span>
+            <i class="fa-brands fa-soundcloud sc-icon"></i>
+          </a>
+        </div>
+        <div class="item item-2 simple-box no-hover">
+          <div class="update-stamp">
+            <div class="status-indicator">
+              <span class="status-dot"></span>
+              <span>OPERATIONAL</span>
+            </div>
+            <div class="date-info">
+              <span class="label">LAST UPDATE</span>
+              <span class="date-val" id="last-update-date">--.--.--</span>
+            </div>
+          </div>
+        </div>
+        <div class="item item-3 simple-box no-padding no-hover"><iframe data-testid="embed-iframe"
+            style="border-radius:12px"
+            src="https://open.spotify.com/embed/artist/6QKxVeYozhtLiJNJHMUM3W?utm_source=generator&theme=0" width="100%"
+            height="380" frameBorder="0" allowfullscreen=""
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        </div>
+        <div class="item item-4 simple-box"></div>
+      </div>
     </div>
   </div>
 
