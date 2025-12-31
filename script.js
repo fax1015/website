@@ -376,3 +376,38 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+// --- Latest YouTube Video ---
+function updateLatestVideo() {
+  const channelId = "UCZETRrcxUZkZZ1J4O1ZWbTw";
+  const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+
+  const iframe = document.getElementById("latest-video-embed");
+  if (!iframe) return;
+
+  fetch(apiUrl)
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === "ok" && data.items && data.items.length > 0) {
+        const latestVideo = data.items[0];
+        // The link is usually https://www.youtube.com/watch?v=VIDEO_ID
+        // We extract the ID from the link or guid
+        let videoId = "";
+        if (latestVideo.link.includes("v=")) {
+          videoId = latestVideo.link.split("v=")[1].split("&")[0];
+        } else if (latestVideo.guid.includes("video:")) {
+          videoId = latestVideo.guid.split("video:")[1];
+        }
+
+        if (videoId) {
+          iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
+        }
+      }
+    })
+    .catch(err => {
+      console.warn("Failed to fetch latest YouTube video, falling back to playlist embed:", err);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", updateLatestVideo);

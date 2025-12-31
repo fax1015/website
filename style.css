@@ -1049,8 +1049,32 @@ body.conventional-active {
 
   .blur-box {
     background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(10px);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Remove hover animations on mobile */
+  .simple-box:hover,
+  .button:hover,
+  .menu-links a:hover,
+  .release-item:hover,
+  .social-card:hover,
+  .footer-links-conv a:hover,
+  .floating-arrow-btn:hover,
+  .soundcloud-card:hover {
+    transform: none !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .item-4:hover .release-info {
+    transform: none !important;
+  }
+
+  .soundcloud-card:hover .sc-icon {
+    transform: rotate(-10deg) translate(10px, 10px) !important;
+    color: rgba(255, 255, 255, 0.2) !important;
   }
 
   .header-text {
