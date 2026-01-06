@@ -1,0 +1,159 @@
+.slot-machine-wrapper {
+    position: relative;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    overflow: visible !important;
+}
+
+.slot-machine {
+    background: transparent;
+    padding: 8px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.slot-display {
+    display: flex;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.slot {
+    width: 70px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.slot-reel {
+    position: absolute;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.1s linear;
+}
+
+.slot-symbol {
+    width: 70px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    user-select: none;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.1));
+}
+
+.points-display {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: #ff4b4b;
+    text-shadow: 0 0 10px rgba(255, 75, 75, 0.5);
+    letter-spacing: 2px;
+    min-width: 100px;
+    text-align: center;
+}
+
+.points-label {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.points-display.win {
+    animation: win-glow 0.5s ease-in-out infinite alternate;
+    color: #00ff88;
+    text-shadow: 0 0 15px rgba(0, 255, 136, 0.8);
+}
+
+@keyframes win-glow {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.1);
+    }
+}
+
+/* Modern Skeuomorphic Lever */
+.lever-container {
+    position: absolute;
+    right: -30px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 100px;
+    z-index: 10;
+    cursor: pointer;
+}
+
+.lever-base {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 30px;
+    background: linear-gradient(to right, #1a1a1a, #333);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lever-shaft {
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    width: 4px;
+    height: 50px;
+    background: linear-gradient(to right, #444, #888, #444);
+    transform-origin: bottom center;
+    transform: rotate(0deg);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin-top: -50px;
+}
+
+.lever-handle {
+    position: absolute;
+    top: -15px;
+    left: -10px;
+    width: 24px;
+    height: 24px;
+    background: radial-gradient(circle at 30% 30%, #ff4b4b, #660000);
+    border-radius: 50%;
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+/* Lever Pull Animation */
+.lever-container.pulling .lever-shaft {
+    transform: rotate(110deg);
+}
+
+/* Responsive adjustment for Mobile */
+@media (max-width: 768px) {
+    .lever-container {
+        right: 10px;
+        /* Move inside on mobile if grid is narrow */
+    }
+}

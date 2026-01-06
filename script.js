@@ -1,58 +1,95 @@
-// --- Cursor ---
-const cursor = document.getElementById("cursor");
+// --- Constants ---
+const GUMROAD_ACCESS_TOKEN = "9abOgbS5q5UG95RhwRpfrRFZLb4lU-VGOA7Zo9UoyhY";
+const YOUTUBE_CHANNEL_ID = "UCZETRrcxUZkZZ1J4O1ZWbTw";
 
+const releaseData = {
+  title: "take me where the wind blows",
+  type: "Album",
+  image: "https://f4.bcbits.com/img/a0985209893_16.jpg",
+  link: "https://hypeddit.com/nlm090"
+};
+
+// --- State ---
 let mouseX = 0, mouseY = 0;
 let cursorX = 0, cursorY = 0;
-const speed = 0.15;
+const cursorSpeed = 0.2;
 
-document.addEventListener("mousemove", (e) => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
+// --- Elements ---
+const cursor = document.getElementById("cursor");
 
-  const target = e.target;
-  const style = window.getComputedStyle(target);
-  if (style.cursor === "pointer") {
-    cursor.classList.add("active");
-  } else {
-    cursor.classList.remove("active");
-  }
-});
-
-function animateCursor() {
-  const dx = mouseX - cursorX;
-  const dy = mouseY - cursorY;
-
-  cursorX += dx * speed;
-  cursorY += dy * speed;
-
-  cursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0) translate(-50%, -50%)`;
-  requestAnimationFrame(animateCursor);
-}
-animateCursor();
-
-document.addEventListener("mousedown", () => {
-  cursor.classList.add("click");
-});
-
-document.addEventListener("mouseup", () => {
-  cursor.classList.remove("click");
-});
-
-// Hide cursor when hovering iframes (since they swallow mouse events)
-const iframes = document.querySelectorAll("iframe");
-iframes.forEach((iframe) => {
-  iframe.addEventListener("mouseenter", () => {
-    cursor.style.opacity = "0";
-  });
-  iframe.addEventListener("mouseleave", () => {
-    cursor.style.opacity = "1";
-  });
-});
-
-// --- Popup ---
-
+// --- Initialization ---
 document.addEventListener("DOMContentLoaded", () => {
+  initCursor();
+  initPopups();
+  initParallax();
+  initLayoutToggle();
+  initFAQ();
+  renderReleaseContent();
+  updateLatestVideo();
+  fetchGumroadProduct();
+  initLastUpdated();
+});
+
+window.addEventListener("load", () => {
+  initLoadingScreen();
+});
+
+// --- Loading Animation ---
+function initLoadingScreen() {
+  const loaderScreen = document.getElementById("loading-screen");
+  if (!loaderScreen) return;
+  const loaderIcon = loaderScreen.querySelector("l-grid");
+
+  setTimeout(() => {
+    loaderScreen.classList.add("hidden");
+    loaderScreen.addEventListener("transitionend", () => {
+      if (loaderIcon) loaderIcon.remove();
+      loaderScreen.remove();
+    }, { once: true });
+  }, 800);
+}
+
+// --- Cursor ---
+function initCursor() {
+  if (!cursor) return;
+
+  document.addEventListener("mousemove", (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+
+    const target = e.target;
+    const style = window.getComputedStyle(target);
+    if (style.cursor === "pointer") {
+      cursor.classList.add("active");
+    } else {
+      cursor.classList.remove("active");
+    }
+  });
+
+  document.addEventListener("mousedown", () => cursor.classList.add("click"));
+  document.addEventListener("mouseup", () => cursor.classList.remove("click"));
+
+  // Hide cursor on iframes
+  document.querySelectorAll("iframe").forEach(iframe => {
+    iframe.addEventListener("mouseenter", () => cursor.style.opacity = "0");
+    iframe.addEventListener("mouseleave", () => cursor.style.opacity = "1");
+  });
+
+  function animateCursor() {
+    const dx = mouseX - cursorX;
+    const dy = mouseY - cursorY;
+    cursorX += dx * cursorSpeed;
+    cursorY += dy * cursorSpeed;
+    cursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0) translate(-50%, -50%)`;
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+}
+
+// --- Popups ---
+function initPopups() {
   const buttons = document.querySelectorAll("[data-popup]");
+  const isMobile = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
 
   buttons.forEach(btn => {
     const popup = document.createElement("div");
@@ -60,10 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
     popup.innerText = btn.getAttribute("data-popup");
     document.body.appendChild(popup);
 
-    const isMobile = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
-
     if (isMobile) {
-      // Mobile: fixed popup above button
       btn.addEventListener("mouseenter", () => {
         const rect = btn.getBoundingClientRect();
         popup.style.left = `${rect.left + rect.width / 2}px`;
@@ -71,12 +105,8 @@ document.addEventListener("DOMContentLoaded", () => {
         popup.style.transform = "translateX(-50%)";
         popup.classList.add("show");
       });
-
-      btn.addEventListener("mouseleave", () => {
-        popup.classList.remove("show");
-      });
+      btn.addEventListener("mouseleave", () => popup.classList.remove("show"));
     } else {
-      // Desktop: smooth follow
       let popupTargetX = 0, popupTargetY = 0;
       let popupX = 0, popupY = 0;
       const popupSpeed = 0.15;
@@ -94,20 +124,13 @@ document.addEventListener("DOMContentLoaded", () => {
         let x = e.pageX + offsetX;
         let y = e.pageY - offsetY;
         const rect = popup.getBoundingClientRect();
-
-        if (x + rect.width > window.innerWidth) {
-          x = e.pageX - rect.width - offsetX;
-        }
-        if (y < 0) {
-          y = e.pageY + offsetY;
-        }
+        if (x + rect.width > window.innerWidth) x = e.pageX - rect.width - offsetX;
+        if (y < 0) y = e.pageY + offsetY;
         popupTargetX = x;
         popupTargetY = y;
       });
 
-      btn.addEventListener("mouseleave", () => {
-        popup.classList.remove("show");
-      });
+      btn.addEventListener("mouseleave", () => popup.classList.remove("show"));
 
       function animatePopup() {
         const dx = popupTargetX - popupX;
@@ -121,130 +144,51 @@ document.addEventListener("DOMContentLoaded", () => {
       animatePopup();
     }
   });
-});
-
-
-// --- Loading Animation ---
-window.addEventListener("load", () => {
-  const loaderScreen = document.getElementById("loading-screen");
-  const loaderIcon = loaderScreen.querySelector("l-grid");
-
-  setTimeout(() => {
-    loaderScreen.classList.add("hidden");
-
-    loaderScreen.addEventListener("transitionend", () => {
-      loaderIcon.remove();
-      loaderScreen.remove();
-    }, { once: true });
-  }, 800);
-});
-
-function copyDiscord(e, el) {
-  e.preventDefault();
-
-  const discordHandle = el.getAttribute("value");
-
-  // helper: show popup animation
-  function showPopup(message) {
-    const popup = Array.from(document.querySelectorAll(".popup"))
-      .find(p => p.innerText === el.getAttribute("data-popup"));
-
-    el.setAttribute("data-popup", message);
-    if (popup) {
-      popup.innerText = message;
-      popup.classList.add("popup-animate");
-      setTimeout(() => popup.classList.remove("popup-animate"), 400);
-    }
-
-    // reset popup text after delay
-    setTimeout(() => {
-      el.setAttribute("data-popup", discordHandle);
-      if (popup) popup.innerText = discordHandle;
-    }, 1500);
-  }
-
-  // try secure clipboard API first
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(discordHandle)
-      .then(() => showPopup("Copied!"))
-      .catch(err => {
-        console.warn("Clipboard copy failed:", err);
-        fallbackCopy(discordHandle, showPopup);
-      });
-  } else {
-    // fallback for HTTP or older browsers
-    fallbackCopy(discordHandle, showPopup);
-  }
 }
 
-// fallback copy using execCommand (works on HTTP)
-function fallbackCopy(text, callback) {
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  textarea.style.position = "fixed";
-  textarea.style.opacity = 0;
-  document.body.appendChild(textarea);
-  textarea.focus();
-  textarea.select();
+// --- Parallax (Desktop Only) ---
+function initParallax() {
+  if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
 
-  try {
-    const successful = document.execCommand("copy");
-    if (successful) callback("Copied!");
-    else callback("Failed");
-  } catch (err) {
-    console.error("Fallback copy failed:", err);
-    callback("Failed");
-  }
+  let pTargetX = 0, pTargetY = 0;
+  let pCurrentX = 0, pCurrentY = 0;
+  const parallaxLerp = 0.1;
 
-  document.body.removeChild(textarea);
-}
-
-
-
-// --- Parallax Background + 3D sync (desktop only) ---
-if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
   document.addEventListener("mousemove", (e) => {
     const { innerWidth, innerHeight } = window;
+    pTargetX = (e.clientX / innerWidth) * 2 - 1;
+    pTargetY = (e.clientY / innerHeight) * 2 - 1;
+  });
 
-    const x = (e.clientX / innerWidth) * 2 - 1;
-    const y = (e.clientY / innerHeight) * 2 - 1;
+  function animateParallax() {
+    pCurrentX += (pTargetX - pCurrentX) * parallaxLerp;
+    pCurrentY += (pTargetY - pCurrentY) * parallaxLerp;
 
     const maxOffset = 1.5;
-    const offsetY = x * maxOffset;
-    const offsetX = -y * maxOffset;
+    const offsetY = pCurrentX * maxOffset;
+    const offsetX = -pCurrentY * maxOffset;
 
-    // Foreground sections
-    const baseLeft = { x: 30, y: 30, z: -10 };
-    const baseRight = { x: -30, y: -30, z: -10 };
+    const sectionLeft = document.querySelector(".section-left");
+    if (sectionLeft) {
+      sectionLeft.style.transform = `rotateX(${30 + offsetX}deg) rotateY(${30 + offsetY}deg) rotateZ(-10deg)`;
+    }
 
-    document.querySelector(".section-left").style.transform =
-      `rotateX(${baseLeft.x + offsetX}deg) rotateY(${baseLeft.y + offsetY}deg) rotateZ(${baseLeft.z}deg)`;
+    const sectionRight = document.querySelector(".section-right");
+    if (sectionRight) {
+      sectionRight.style.transform = `rotateX(${-30 + offsetX * 0.5}deg) rotateY(${-30 + offsetY * 0.5}deg) rotateZ(-10deg)`;
+    }
 
-    document.querySelector(".section-right").style.transform =
-      `rotateX(${baseRight.x + offsetX * 0.5}deg) rotateY(${baseRight.y + offsetY * 0.5}deg) rotateZ(${baseRight.z}deg)`;
-
-    // Background layers
-    const layers = document.querySelectorAll(".parallax .layer");
-    layers.forEach((layer, index) => {
+    document.querySelectorAll(".parallax .layer").forEach((layer, index) => {
       const depth = (index + 0.5) ** 3.5;
-      const moveX = x * depth;
-      const moveY = y * depth;
-
-      layer.style.transform =
-        `translate(${moveX}px, ${moveY}px) scale(1.05)
-         rotateX(${offsetX * 0.5}deg) rotateY(${offsetY * 0.5}deg)`;
+      layer.style.transform = `translate(${pCurrentX * depth}px, ${pCurrentY * depth}px) scale(1.05) rotateX(${offsetX * 0.5}deg) rotateY(${offsetY * 0.5}deg)`;
     });
-  });
+
+    requestAnimationFrame(animateParallax);
+  }
+  animateParallax();
 }
 
 // --- New Releases ---
-const releaseData = {
-  title: "take me where the wind blows",
-  type: "Album",
-  image: "https://f4.bcbits.com/img/a0985209893_16.jpg",
-  link: "https://hypeddit.com/nlm090"
-};
-
 function renderReleaseContent() {
   const content = `
     <a href="${releaseData.link}" class="release-item" target="_blank">
@@ -256,158 +200,171 @@ function renderReleaseContent() {
     </a>
   `;
 
-  // Render in Notice
   const noticeContainer = document.querySelector(".releases-container");
   if (noticeContainer) noticeContainer.innerHTML = content;
 
-  // Render in Grid (Item 4)
   const gridItem4 = document.querySelector(".item-4");
   if (gridItem4) {
     gridItem4.innerHTML = content;
-    gridItem4.classList.add("no-padding"); // remove padding for full fit if desired, or keep it.
-    // Let's actually NOT add no-padding by default unless it looks bad, but based on typical bento, 
-    // replacing the inner content is the key.
-    // However, to make it look like the release item card itself is the grid item, 
-    // we might want to adjust styling. 
-    // For now, simple injection.
+    gridItem4.classList.add("no-padding");
   }
 }
-
-document.addEventListener("DOMContentLoaded", renderReleaseContent);
 
 function closeReleases() {
   const notice = document.querySelector(".new-releases-notice");
   if (notice) {
-    notice.style.animation = "slideOut 0.3s ease";
-    setTimeout(() => {
-      notice.style.display = "none";
-    }, 300);
+    notice.style.animation = "slideOut 0.3s ease forwards";
+    setTimeout(() => notice.style.display = "none", 300);
   }
 }
 
-// Add slideOut animation
-const style = document.createElement("style");
-style.textContent = `
-  @keyframes slideOut {
-    to {
-      opacity: 0;
-      transform: translateX(-100px);
-    }
-  }
-`;
-document.head.appendChild(style);
-
 // --- FAQ ---
-
-document.addEventListener("DOMContentLoaded", () => {
-  const faqButton = document.querySelector(".fa-circle-question"); // footer icon
+function initFAQ() {
+  const faqBtn = document.querySelector(".fa-circle-question");
   const menuLinks = document.querySelector(".menu-links");
   const faqSection = document.querySelector(".faq-section");
-  const backButton = document.querySelector(".faq-back");
+  const backBtn = document.querySelector(".faq-back");
 
-  if (faqButton && menuLinks && faqSection) {
-    faqButton.addEventListener("click", (e) => {
-      e.preventDefault();
+  const toggleFAQ = (show) => {
+    faqSection?.classList.toggle("show", show);
+    menuLinks?.classList.toggle("hide", show);
+  };
 
-      const showingFaq = faqSection.classList.contains("show");
+  faqBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    toggleFAQ(!faqSection.classList.contains("show"));
+  });
 
-      if (showingFaq) {
-        faqSection.classList.remove("show");
-        menuLinks.classList.remove("hide");
-      } else {
-        faqSection.classList.add("show");
-        menuLinks.classList.add("hide");
-      }
-    });
-  }
-
-  if (backButton) {
-    backButton.addEventListener("click", () => {
-      faqSection.classList.remove("show");
-      menuLinks.classList.remove("hide");
-    });
-  }
-});
+  backBtn?.addEventListener("click", () => toggleFAQ(false));
+}
 
 // --- Layout Toggle ---
-document.addEventListener("DOMContentLoaded", () => {
+function initLayoutToggle() {
   const toggleBtn = document.getElementById("layoutToggleBtn");
   const conventionalLayout = document.getElementById("conventionalLayout");
+  if (!toggleBtn || !conventionalLayout) return;
 
-  // Last Updated Date
+  toggleBtn.addEventListener("click", () => {
+    const isActive = document.body.classList.toggle("conventional-active");
+    conventionalLayout.classList.toggle("active", isActive);
+    toggleBtn.classList.toggle("rotated", isActive);
+  });
+}
+
+// --- GitHub Last Updated ---
+function initLastUpdated() {
   const dateEl = document.getElementById("last-update-date");
-  if (dateEl) {
-    fetch("https://api.github.com/repos/fax1015/website/commits?per_page=1")
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.length > 0) {
-          const date = new Date(data[0].commit.author.date);
-          const formatted = `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')}`;
-          dateEl.innerText = formatted;
-        } else {
-          throw new Error("No commits found");
-        }
-      })
-      .catch(err => {
-        console.warn("GitHub fetch failed, falling back to basic date:", err);
-        const now = new Date();
-        const formatted = `${now.getFullYear()}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getDate().toString().padStart(2, '0')}`;
-        dateEl.innerText = formatted;
-      });
-  }
+  if (!dateEl) return;
 
-  let isConventionalActive = false;
-
-  if (toggleBtn && conventionalLayout) {
-    toggleBtn.addEventListener("click", () => {
-      isConventionalActive = !isConventionalActive;
-
-      if (isConventionalActive) {
-        // Activate conventional layout
-        document.body.classList.add("conventional-active");
-        conventionalLayout.classList.add("active");
-        toggleBtn.classList.add("rotated");
-      } else {
-        // Deactivate conventional layout
-        document.body.classList.remove("conventional-active");
-        conventionalLayout.classList.remove("active");
-        toggleBtn.classList.remove("rotated");
-      }
+  fetch("https://api.github.com/repos/fax1015/website/commits?per_page=1")
+    .then(res => res.json())
+    .then(data => {
+      const date = data?.[0] ? new Date(data[0].commit.author.date) : new Date();
+      dateEl.innerText = `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')}`;
+    })
+    .catch(() => {
+      const now = new Date();
+      dateEl.innerText = `${now.getFullYear()}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getDate().toString().padStart(2, '0')}`;
     });
-  }
-});
+}
 
-// --- Latest YouTube Video ---
+// --- YouTube ---
 function updateLatestVideo() {
-  const channelId = "UCZETRrcxUZkZZ1J4O1ZWbTw";
-  const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
-  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
-
   const iframe = document.getElementById("latest-video-embed");
   if (!iframe) return;
+
+  const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${YOUTUBE_CHANNEL_ID}`;
+  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
 
   fetch(apiUrl)
     .then(res => res.json())
     .then(data => {
-      if (data.status === "ok" && data.items && data.items.length > 0) {
-        const latestVideo = data.items[0];
-        // The link is usually https://www.youtube.com/watch?v=VIDEO_ID
-        // We extract the ID from the link or guid
+      if (data.status === "ok" && data.items?.[0]) {
+        const latest = data.items[0];
         let videoId = "";
-        if (latestVideo.link.includes("v=")) {
-          videoId = latestVideo.link.split("v=")[1].split("&")[0];
-        } else if (latestVideo.guid.includes("video:")) {
-          videoId = latestVideo.guid.split("video:")[1];
-        }
+        if (latest.link.includes("v=")) videoId = latest.link.split("v=")[1].split("&")[0];
+        else if (latest.guid.includes("video:")) videoId = latest.guid.split("video:")[1];
 
-        if (videoId) {
-          iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
-        }
+        if (videoId) iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
       }
-    })
-    .catch(err => {
-      console.warn("Failed to fetch latest YouTube video, falling back to playlist embed:", err);
     });
 }
 
-document.addEventListener("DOMContentLoaded", updateLatestVideo);
+// --- Gumroad ---
+function fetchGumroadProduct() {
+  const container = document.getElementById("gumroad-container");
+  if (!container) return;
+
+  if (!GUMROAD_ACCESS_TOKEN || GUMROAD_ACCESS_TOKEN === "YOUR_ACCESS_TOKEN_HERE") {
+    container.innerHTML = `<div class="gumroad-placeholder"><p>Gumroad token missing.</p><a href="https://fax1015.gumroad.com/" target="_blank" class="button">Visit Shop</a></div>`;
+    return;
+  }
+
+  fetch("https://api.gumroad.com/v2/products", {
+    headers: { "Authorization": `Bearer ${GUMROAD_ACCESS_TOKEN}` }
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.products?.[0]) {
+        const product = data.products.find(p => p.published) || data.products[0];
+        const { name, preview_url, short_url, formatted_price, covers } = product;
+        const image = preview_url || covers?.[0] || "";
+        container.innerHTML = `
+          <a href="${short_url}" target="_blank" class="gumroad-card">
+            <div class="gumroad-img" style="background-image: url('${image}')"></div>
+            <div class="gumroad-info">
+              <div class="gr-top"><span class="gr-tag">LATEST DROP</span></div>
+              <h3 class="gr-title">${name}</h3>
+              <div class="gr-bottom">
+                <div class="gr-btn">GET IT NOW <i class="fa-solid fa-arrow-right-long"></i></div>
+                <span class="gr-price">${formatted_price}</span>
+              </div>
+            </div>
+          </a>`;
+      }
+    })
+    .catch(() => {
+      container.innerHTML = `<div class="gumroad-error"><p>Failed to load product</p><a href="https://fax1015.gumroad.com/" target="_blank">Visit Store</a></div>`;
+    });
+}
+
+// --- Discord Copy ---
+function copyDiscord(e, el) {
+  e.preventDefault();
+  const discordHandle = el.getAttribute("value");
+
+  function showStatus(message) {
+    const popup = Array.from(document.querySelectorAll(".popup")).find(p => p.innerText === el.getAttribute("data-popup") || p.innerText === "Copied!");
+    el.setAttribute("data-popup", message);
+    if (popup) {
+      popup.innerText = message;
+      popup.classList.add("popup-animate");
+      setTimeout(() => popup.classList.remove("popup-animate"), 400);
+    }
+    setTimeout(() => {
+      el.setAttribute("data-popup", discordHandle);
+      if (popup) popup.innerText = discordHandle;
+    }, 1500);
+  }
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(discordHandle).then(() => showStatus("Copied!")).catch(() => fallbackCopy(discordHandle, showStatus));
+  } else {
+    fallbackCopy(discordHandle, showStatus);
+  }
+}
+
+function fallbackCopy(text, callback) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  Object.assign(ta.style, { position: "fixed", opacity: "0" });
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    if (document.execCommand("copy")) callback("Copied!");
+    else callback("Failed");
+  } catch {
+    callback("Failed");
+  }
+  document.body.removeChild(ta);
+}
