@@ -1,7 +1,5 @@
-// --- Constants ---
 const GUMROAD_ACCESS_TOKEN = "9abOgbS5q5UG95RhwRpfrRFZLb4lU-VGOA7Zo9UoyhY";
 const YOUTUBE_CHANNEL_ID = "UCZETRrcxUZkZZ1J4O1ZWbTw";
-
 const releaseData = {
   title: "take me where the wind blows",
   type: "Album",
@@ -9,15 +7,10 @@ const releaseData = {
   link: "https://hypeddit.com/nlm090"
 };
 
-// --- State ---
-let mouseX = 0, mouseY = 0;
-let cursorX = 0, cursorY = 0;
+let mouseX = 0, mouseY = 0, cursorX = 0, cursorY = 0;
 const cursorSpeed = 0.2;
-
-// --- Elements ---
 const cursor = document.getElementById("cursor");
 
-// --- Initialization ---
 document.addEventListener("DOMContentLoaded", () => {
   initCursor();
   initPopups();
@@ -31,45 +24,36 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 window.addEventListener("load", () => {
-  initLoadingScreen();
-});
-
-// --- Loading Animation ---
-function initLoadingScreen() {
   const loaderScreen = document.getElementById("loading-screen");
   if (!loaderScreen) return;
   const loaderIcon = loaderScreen.querySelector("l-grid");
-
   setTimeout(() => {
     loaderScreen.classList.add("hidden");
     loaderScreen.addEventListener("transitionend", () => {
-      if (loaderIcon) loaderIcon.remove();
+      loaderIcon?.remove();
       loaderScreen.remove();
     }, { once: true });
   }, 800);
-}
+});
 
-// --- Cursor ---
+const cursorLoop = { x: 0, y: 0, active: false };
 function initCursor() {
   if (!cursor) return;
 
-  document.addEventListener("mousemove", (e) => {
+  const updateCursor = (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-
-    const target = e.target;
-    const style = window.getComputedStyle(target);
-    if (style.cursor === "pointer") {
-      cursor.classList.add("active");
-    } else {
-      cursor.classList.remove("active");
+    cursor.classList.toggle("active", window.getComputedStyle(e.target).cursor === "pointer");
+    if (!cursorLoop.active) {
+      cursorLoop.active = true;
+      animateCursor();
     }
-  });
+  };
 
+  document.addEventListener("mousemove", updateCursor);
   document.addEventListener("mousedown", () => cursor.classList.add("click"));
   document.addEventListener("mouseup", () => cursor.classList.remove("click"));
 
-  // Hide cursor on iframes
   document.querySelectorAll("iframe").forEach(iframe => {
     iframe.addEventListener("mouseenter", () => cursor.style.opacity = "0");
     iframe.addEventListener("mouseleave", () => cursor.style.opacity = "1");
@@ -78,15 +62,19 @@ function initCursor() {
   function animateCursor() {
     const dx = mouseX - cursorX;
     const dy = mouseY - cursorY;
+
+    if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1) {
+      cursorLoop.active = false;
+      return;
+    }
+
     cursorX += dx * cursorSpeed;
     cursorY += dy * cursorSpeed;
     cursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0) translate(-50%, -50%)`;
     requestAnimationFrame(animateCursor);
   }
-  animateCursor();
 }
 
-// --- Popups ---
 function initPopups() {
   const buttons = document.querySelectorAll("[data-popup]");
   const isMobile = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
@@ -107,88 +95,105 @@ function initPopups() {
       });
       btn.addEventListener("mouseleave", () => popup.classList.remove("show"));
     } else {
-      let popupTargetX = 0, popupTargetY = 0;
-      let popupX = 0, popupY = 0;
-      const popupSpeed = 0.15;
-      const offsetX = 30, offsetY = 24;
+      let popupTargetX = 0, popupTargetY = 0, popupX = 0, popupY = 0;
+      let isActive = false;
+      const popupSpeed = 0.15, offsetX = 30, offsetY = 24;
 
-      btn.addEventListener("mouseenter", (e) => {
-        popup.classList.add("show");
-        popupTargetX = e.pageX + offsetX;
-        popupTargetY = e.pageY - offsetY;
-        popupX = popupTargetX;
-        popupY = popupTargetY;
-      });
+      const animatePopup = () => {
+        if (!isActive) return;
 
-      btn.addEventListener("mousemove", (e) => {
-        let x = e.pageX + offsetX;
-        let y = e.pageY - offsetY;
-        const rect = popup.getBoundingClientRect();
-        if (x + rect.width > window.innerWidth) x = e.pageX - rect.width - offsetX;
-        if (y < 0) y = e.pageY + offsetY;
-        popupTargetX = x;
-        popupTargetY = y;
-      });
-
-      btn.addEventListener("mouseleave", () => popup.classList.remove("show"));
-
-      function animatePopup() {
         const dx = popupTargetX - popupX;
         const dy = popupTargetY - popupY;
+
+        if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1 && !popup.classList.contains("show")) {
+          isActive = false;
+          return;
+        }
+
         popupX += dx * popupSpeed;
         popupY += dy * popupSpeed;
         popup.style.left = `${popupX}px`;
         popup.style.top = `${popupY}px`;
         requestAnimationFrame(animatePopup);
-      }
-      animatePopup();
+      };
+
+      btn.addEventListener("mouseenter", (e) => {
+        popup.classList.add("show");
+        popupX = popupTargetX = e.pageX + offsetX;
+        popupY = popupTargetY = e.pageY - offsetY;
+        if (!isActive) {
+          isActive = true;
+          animatePopup();
+        }
+      });
+
+      btn.addEventListener("mousemove", (e) => {
+        let x = e.pageX + offsetX, y = e.pageY - offsetY;
+        const rect = popup.getBoundingClientRect();
+        if (x + rect.width > window.innerWidth) x = e.pageX - rect.width - offsetX;
+        if (y < 0) y = e.pageY + offsetY;
+        popupTargetX = x;
+        popupTargetY = y;
+        if (!isActive) {
+          isActive = true;
+          animatePopup();
+        }
+      });
+
+      btn.addEventListener("mouseleave", () => {
+        popup.classList.remove("show");
+        // Keep animation running briefly to finish any movement or wait for hide
+      });
     }
   });
 }
 
-// --- Parallax (Desktop Only) ---
 function initParallax() {
   if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
 
-  let pTargetX = 0, pTargetY = 0;
-  let pCurrentX = 0, pCurrentY = 0;
+  let pTargetX = 0, pTargetY = 0, pCurrentX = 0, pCurrentY = 0;
+  let isActive = false;
   const parallaxLerp = 0.1;
+  const sectionLeft = document.querySelector(".section-left");
+  const sectionRight = document.querySelector(".section-right");
+  const layers = document.querySelectorAll(".parallax .layer");
 
   document.addEventListener("mousemove", (e) => {
-    const { innerWidth, innerHeight } = window;
-    pTargetX = (e.clientX / innerWidth) * 2 - 1;
-    pTargetY = (e.clientY / innerHeight) * 2 - 1;
+    pTargetX = (e.clientX / window.innerWidth) * 2 - 1;
+    pTargetY = (e.clientY / window.innerHeight) * 2 - 1;
+    if (!isActive) {
+      isActive = true;
+      animateParallax();
+    }
   });
 
   function animateParallax() {
-    pCurrentX += (pTargetX - pCurrentX) * parallaxLerp;
-    pCurrentY += (pTargetY - pCurrentY) * parallaxLerp;
+    const dx = pTargetX - pCurrentX;
+    const dy = pTargetY - pCurrentY;
 
-    const maxOffset = 1.5;
-    const offsetY = pCurrentX * maxOffset;
-    const offsetX = -pCurrentY * maxOffset;
-
-    const sectionLeft = document.querySelector(".section-left");
-    if (sectionLeft) {
-      sectionLeft.style.transform = `rotateX(${30 + offsetX}deg) rotateY(${30 + offsetY}deg) rotateZ(-10deg)`;
+    if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) {
+      isActive = false;
+      return;
     }
 
-    const sectionRight = document.querySelector(".section-right");
-    if (sectionRight) {
-      sectionRight.style.transform = `rotateX(${-30 + offsetX * 0.5}deg) rotateY(${-30 + offsetY * 0.5}deg) rotateZ(-10deg)`;
-    }
+    pCurrentX += dx * parallaxLerp;
+    pCurrentY += dy * parallaxLerp;
 
-    document.querySelectorAll(".parallax .layer").forEach((layer, index) => {
-      const depth = (index + 0.5) ** 3.5;
+    const offsetY = pCurrentX * 1.5;
+    const offsetX = -pCurrentY * 1.5;
+
+    if (sectionLeft) sectionLeft.style.transform = `rotateX(${30 + offsetX}deg) rotateY(${30 + offsetY}deg) rotateZ(-10deg)`;
+    if (sectionRight) sectionRight.style.transform = `rotateX(${-30 + offsetX * 0.5}deg) rotateY(${-30 + offsetY * 0.5}deg) rotateZ(-10deg)`;
+
+    layers.forEach((layer, i) => {
+      const depth = (i + 0.5) ** 3.5;
       layer.style.transform = `translate(${pCurrentX * depth}px, ${pCurrentY * depth}px) scale(1.05) rotateX(${offsetX * 0.5}deg) rotateY(${offsetY * 0.5}deg)`;
     });
 
     requestAnimationFrame(animateParallax);
   }
-  animateParallax();
 }
 
-// --- New Releases ---
 function renderReleaseContent() {
   const content = `
     <a href="${releaseData.link}" class="release-item" target="_blank">
@@ -197,8 +202,7 @@ function renderReleaseContent() {
         <p class="release-name">${releaseData.title}</p>
         <p class="release-type">${releaseData.type}</p>
       </div>
-    </a>
-  `;
+    </a>`;
 
   const noticeContainer = document.querySelector(".releases-container");
   if (noticeContainer) noticeContainer.innerHTML = content;
@@ -218,7 +222,6 @@ function closeReleases() {
   }
 }
 
-// --- FAQ ---
 function initFAQ() {
   const faqBtn = document.querySelector(".fa-circle-question");
   const menuLinks = document.querySelector(".menu-links");
@@ -234,11 +237,9 @@ function initFAQ() {
     e.preventDefault();
     toggleFAQ(!faqSection.classList.contains("show"));
   });
-
   backBtn?.addEventListener("click", () => toggleFAQ(false));
 }
 
-// --- Layout Toggle ---
 function initLayoutToggle() {
   const toggleBtn = document.getElementById("layoutToggleBtn");
   const conventionalLayout = document.getElementById("conventionalLayout");
@@ -251,46 +252,35 @@ function initLayoutToggle() {
   });
 }
 
-// --- GitHub Last Updated ---
+function formatDate(date) {
+  return `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')}`;
+}
+
 function initLastUpdated() {
   const dateEl = document.getElementById("last-update-date");
   if (!dateEl) return;
 
   fetch("https://api.github.com/repos/fax1015/website/commits?per_page=1")
     .then(res => res.json())
-    .then(data => {
-      const date = data?.[0] ? new Date(data[0].commit.author.date) : new Date();
-      dateEl.innerText = `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')}`;
-    })
-    .catch(() => {
-      const now = new Date();
-      dateEl.innerText = `${now.getFullYear()}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getDate().toString().padStart(2, '0')}`;
-    });
+    .then(data => dateEl.innerText = formatDate(data?.[0] ? new Date(data[0].commit.author.date) : new Date()))
+    .catch(() => dateEl.innerText = formatDate(new Date()));
 }
 
-// --- YouTube ---
 function updateLatestVideo() {
   const iframe = document.getElementById("latest-video-embed");
   if (!iframe) return;
 
-  const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${YOUTUBE_CHANNEL_ID}`;
-  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
-
-  fetch(apiUrl)
+  fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(`https://www.youtube.com/feeds/videos.xml?channel_id=${YOUTUBE_CHANNEL_ID}`)}`)
     .then(res => res.json())
     .then(data => {
       if (data.status === "ok" && data.items?.[0]) {
         const latest = data.items[0];
-        let videoId = "";
-        if (latest.link.includes("v=")) videoId = latest.link.split("v=")[1].split("&")[0];
-        else if (latest.guid.includes("video:")) videoId = latest.guid.split("video:")[1];
-
+        const videoId = latest.link.includes("v=") ? latest.link.split("v=")[1].split("&")[0] : latest.guid.includes("video:") ? latest.guid.split("video:")[1] : "";
         if (videoId) iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
       }
     });
 }
 
-// --- Gumroad ---
 function fetchGumroadProduct() {
   const container = document.getElementById("gumroad-container");
   if (!container) return;
@@ -300,18 +290,15 @@ function fetchGumroadProduct() {
     return;
   }
 
-  fetch("https://api.gumroad.com/v2/products", {
-    headers: { "Authorization": `Bearer ${GUMROAD_ACCESS_TOKEN}` }
-  })
+  fetch("https://api.gumroad.com/v2/products", { headers: { "Authorization": `Bearer ${GUMROAD_ACCESS_TOKEN}` } })
     .then(res => res.json())
     .then(data => {
       if (data.success && data.products?.[0]) {
         const product = data.products.find(p => p.published) || data.products[0];
         const { name, preview_url, short_url, formatted_price, covers } = product;
-        const image = preview_url || covers?.[0] || "";
         container.innerHTML = `
           <a href="${short_url}" target="_blank" class="gumroad-card">
-            <div class="gumroad-img" style="background-image: url('${image}')"></div>
+            <div class="gumroad-img" style="background-image: url('${preview_url || covers?.[0] || ""}')"></div>
             <div class="gumroad-info">
               <div class="gr-top"><span class="gr-tag">LATEST DROP</span></div>
               <h3 class="gr-title">${name}</h3>
@@ -323,17 +310,14 @@ function fetchGumroadProduct() {
           </a>`;
       }
     })
-    .catch(() => {
-      container.innerHTML = `<div class="gumroad-error"><p>Failed to load product</p><a href="https://fax1015.gumroad.com/" target="_blank">Visit Store</a></div>`;
-    });
+    .catch(() => container.innerHTML = `<div class="gumroad-error"><p>Failed to load product</p><a href="https://fax1015.gumroad.com/" target="_blank">Visit Store</a></div>`);
 }
 
-// --- Discord Copy ---
 function copyDiscord(e, el) {
   e.preventDefault();
   const discordHandle = el.getAttribute("value");
 
-  function showStatus(message) {
+  const showStatus = (message) => {
     const popup = Array.from(document.querySelectorAll(".popup")).find(p => p.innerText === el.getAttribute("data-popup") || p.innerText === "Copied!");
     el.setAttribute("data-popup", message);
     if (popup) {
@@ -345,7 +329,7 @@ function copyDiscord(e, el) {
       el.setAttribute("data-popup", discordHandle);
       if (popup) popup.innerText = discordHandle;
     }, 1500);
-  }
+  };
 
   if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard.writeText(discordHandle).then(() => showStatus("Copied!")).catch(() => fallbackCopy(discordHandle, showStatus));
@@ -361,8 +345,7 @@ function fallbackCopy(text, callback) {
   document.body.appendChild(ta);
   ta.select();
   try {
-    if (document.execCommand("copy")) callback("Copied!");
-    else callback("Failed");
+    callback(document.execCommand("copy") ? "Copied!" : "Failed");
   } catch {
     callback("Failed");
   }
