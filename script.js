@@ -149,7 +149,9 @@ function initPopups() {
 }
 
 function initParallax() {
-  if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+  const prefersHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  // Allow parallax on large screens even if the device reports no hover support
+  if (!prefersHover && window.innerWidth < 700) return;
 
   let pTargetX = 0, pTargetY = 0, pCurrentX = 0, pCurrentY = 0;
   let isActive = false;
@@ -268,7 +270,19 @@ function initLastUpdated() {
 
 function updateLatestVideo() {
   const iframe = document.getElementById("latest-video-embed");
+  const note = document.getElementById("yt-embed-note");
   if (!iframe) return;
+
+  // Determine the uploads playlist ID (channels expose uploads playlist as UU<channel-id-without-UC-prefix>)
+  const uploadsPlaylist = YOUTUBE_CHANNEL_ID.startsWith("UC") ? `UU${YOUTUBE_CHANNEL_ID.slice(2)}` : YOUTUBE_CHANNEL_ID;
+
+  // Use privacy-enhanced domain (no-cookie) and add origin param when possible to avoid config errors
+  const originParam = (location.protocol === 'file:') ? '' : `&origin=${encodeURIComponent(location.origin)}`;
+  const fallbackPlaylistUrl = `https://www.youtube-nocookie.com/embed/videoseries?list=${uploadsPlaylist}&rel=0&modestbranding=1${originParam}`;
+
+  // If opened from file://, show a helpful note (this is a common cause of Error 153)
+  if (location.protocol === 'file:' && note) note.style.display = 'block';
+  else if (note) note.style.display = 'none';
 
   fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(`https://www.youtube.com/feeds/videos.xml?channel_id=${YOUTUBE_CHANNEL_ID}`)}`)
     .then(res => res.json())
@@ -276,8 +290,15 @@ function updateLatestVideo() {
       if (data.status === "ok" && data.items?.[0]) {
         const latest = data.items[0];
         const videoId = latest.link.includes("v=") ? latest.link.split("v=")[1].split("&")[0] : latest.guid.includes("video:") ? latest.guid.split("video:")[1] : "";
-        if (videoId) iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
+        if (videoId) iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1${originParam}`;
+        else iframe.src = fallbackPlaylistUrl;
+      } else {
+        iframe.src = fallbackPlaylistUrl;
       }
+    })
+    .catch(() => {
+      // On any fetch error, show the channel uploads playlist as a safe fallback
+      iframe.src = fallbackPlaylistUrl;
     });
 }
 
