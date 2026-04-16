@@ -117,7 +117,7 @@
 
   <div class="new-releases-notice">
     <div class="releases-header">
-      <p class="releases-title">New Release!! LISTEN NOW</p>
+      <p class="releases-title">LISTEN TO MY ALBUM PWEASE</p>
       <button class="releases-close" onclick="closeReleases()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="releases-container">
@@ -152,7 +152,9 @@
           <div class="item item-0 simple-box no-padding no-hover">
             <iframe id="latest-video-embed"
               src="https://www.youtube-nocookie.com/embed/videoseries?list=UUZETRrcxUZkZZ1J4O1ZWbTw" width="100%"
-              height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+              height="100%" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen loading="lazy"></iframe>
           </div>
           <div class="item item-1 simple-box no-padding">
             <a href="https://soundcloud.com/fax0508/sets/discography?si=2567cdff22714f49a4e4eabd3a8b4425&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing"
@@ -165,7 +167,8 @@
             <div class="update-stamp">
               <div class="status-indicator">
                 <span class="status-dot"></span>
-                <span>STILL GOING</span>
+                <span class="status-dot"></span>
+                <span class="status-dot"></span>
               </div>
               <div class="date-info">
                 <span class="label">LAST WEBSITE UPDATE</span>
@@ -186,11 +189,9 @@
           <div class="item item-5 simple-box no-padding" id="gumroad-container">
             <!-- Content populated by script.js -->
           </div>
-          <div class="item item-6 simple-box no-hover">
+          <div class="item item-6 simple-box no-hover no-padding">
             <div class="visitor-counter">
-              <div class="organic-particles">
-                <span></span><span></span><span></span><span></span><span></span>
-              </div>
+              <canvas id="canvas" class="organic-particles"></canvas>
               <div class="visitor-info">
                 <span class="label">VISITORS TODAY</span>
                 <span class="count-val">0<span class="approx"> (idk probably)</span></span>

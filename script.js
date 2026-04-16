@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
   updateLatestVideo();
   fetchGumroadProduct();
   initLastUpdated();
+  initNoiseBackground();
 });
 
 window.addEventListener("load", () => {
@@ -371,4 +372,91 @@ function fallbackCopy(text, callback) {
     callback("Failed");
   }
   document.body.removeChild(ta);
+}
+function initNoiseBackground() {
+  const canvas = document.getElementById('canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const parent = canvas.parentElement;
+
+  const gridSize = 40;
+  let noiseData = [];
+  let mousePos = { x: -1000, y: -1000 };
+  let lastRegenTime = 0;
+  let spotlightAlpha = 0;
+  let isMouseInside = false;
+
+  function generateNoise() {
+    const data = [];
+    for (let i = 0; i < gridSize * gridSize; i++) {
+      data.push(Math.random());
+    }
+    return data;
+  }
+
+  parent.addEventListener('mousemove', (e) => {
+    isMouseInside = true;
+    const rect = canvas.getBoundingClientRect();
+    mousePos.x = e.clientX - rect.left;
+    mousePos.y = e.clientY - rect.top;
+
+    const now = performance.now();
+    if (now - lastRegenTime > (1000 / 12)) {
+      noiseData = generateNoise();
+      lastRegenTime = now;
+    }
+  });
+
+  parent.addEventListener('mouseleave', () => {
+    isMouseInside = false;
+  });
+
+  function render() {
+    const W = parent.clientWidth || 200;
+    const H = parent.clientHeight || 150;
+    if (canvas.width !== W || canvas.height !== H) {
+      canvas.width = W;
+      canvas.height = H;
+    }
+
+    ctx.clearRect(0, 0, W, H);
+    if (spotlightAlpha < 0.01) return;
+
+    const cellW = W / gridSize;
+    const cellH = H / gridSize;
+    const visibilityRadius = 120 * (0.8 + 0.2 * spotlightAlpha); // Radius also grows slightly
+
+    for (let i = 0; i < gridSize; i++) {
+      for (let j = 0; j < gridSize; j++) {
+        const centerX = j * cellW + cellW / 2;
+        const centerY = i * cellH + cellH / 2;
+        const dx = centerX - mousePos.x;
+        const dy = centerY - mousePos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < visibilityRadius) {
+          const val = noiseData[i * gridSize + j] || 0;
+          const fade = Math.pow(1 - dist / visibilityRadius, 2);
+          const alpha = (0.05 + val * 0.25) * fade * spotlightAlpha;
+          
+          ctx.fillStyle = `rgba(100, 40, 160, ${alpha})`;
+          ctx.fillRect(j * cellW, i * cellH, cellW + 1, cellH + 1);
+        }
+      }
+    }
+  }
+
+  function update() {
+    // Smooth transition for spotlight alpha
+    const targetAlpha = isMouseInside ? 1 : 0;
+    spotlightAlpha += (targetAlpha - spotlightAlpha) * 0.12;
+
+    render();
+    requestAnimationFrame(update);
+  }
+
+  noiseData = generateNoise();
+  requestAnimationFrame(update);
+
+  window.addEventListener('resize', () => render());
 }
